@@ -1,17 +1,31 @@
-#![allow(dead_code)]   
-#[macro_use]
+#![allow(dead_code)]
 extern crate diesel;
-#[macro_use]
 extern crate diesel_codegen;
+use diesel::pg::PgConnection;
+use diesel::prelude::*;
 extern crate dotenv;
 
 use dotenv::dotenv;
 use std::env;
 
-mod schema;
 mod models;
-
+mod schema;
 
 fn main() {
-    println!("Hello, world!");
+    dotenv().ok();
+
+    let database_url = env::var("DATABASE_URL").expect("SET DATABASE_URL");
+    let conn = &mut PgConnection::establish(&database_url).unwrap();
+
+    let book = models::NewBook {
+        title: String::from("Gravity's Rainbow"),
+        author: String::from("Thomas Pynchon"),
+        published: true,
+    };
+
+    if models::Book::insert(book, conn) {
+        println!("success");
+    } else {
+        println!("failed");
+    }
 }
